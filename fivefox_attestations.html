@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FiveFox - Аттестации</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .option {
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        .option.selected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>Выбор аттестаций</h1>
+    
+    <div class="section" id="class-section">
+        <h2>Выберите ваш класс</h2>
+        <div class="option" data-class="7">7 класс</div>
+        <div class="option" data-class="8">8 класс</div>
+        <div class="option" data-class="9">9 класс</div>
+        <div class="option" data-class="10">10 класс</div>
+        <div class="option" data-class="11">11 класс</div>
+        <div class="option" data-class="ext">Экстерн</div>
+    </div>
+    
+    <div class="section" id="subjects-section" style="display: none;">
+        <h2>Выберите предметы</h2>
+        <div class="option" data-subject="Алгебра">Алгебра</div>
+        <div class="option" data-subject="Геометрия">Геометрия</div>
+        <div class="option" data-subject="Физика">Физика</div>
+        <div class="option" data-subject="Информатика">Информатика</div>
+        <div class="option" data-subject="Русский язык">Русский язык</div>
+        <div class="option" data-subject="Литература">Литература</div>
+        <div class="option" data-subject="История">История</div>
+        <div class="option" data-subject="Обществознание">Обществознание</div>
+        <div class="option" data-subject="Биология">Биология</div>
+        <div class="option" data-subject="Химия">Химия</div>
+        <div class="option" data-subject="География">География</div>
+        <div class="option" data-subject="Английский язык">Английский язык</div>
+    </div>
+
+    <div class="section" id="comment-section" style="display: none;">
+        <h2>Комментарий к заказу (необязательно)</h2>
+        <textarea id="comment" placeholder="Введите ваш комментарий здесь..."></textarea>
+    </div>
+    
+    <div class="section" id="confirm-section" style="display: none;">
+        <h2>Итоговая стоимость: <span id="total-price">0</span> руб.</h2>
+        <button id="confirm-button" onclick="confirmOrder()" disabled>Подтвердить заказ</button>
+    </div>
+    
+    <script>
+        const subjectsPrices = 500;
+        let selectedClass = '';
+        let selectedSubjects = [];
+        
+        document.querySelectorAll('#class-section .option').forEach(option => {
+            option.addEventListener('click', () => {
+                selectedClass = option.getAttribute('data-class');
+                document.querySelectorAll('#class-section .option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                
+                document.getElementById('subjects-section').style.display = 'block';
+                document.getElementById('comment-section').style.display = 'none';
+                document.getElementById('confirm-section').style.display = 'none';
+                selectedSubjects = [];
+                updatePrice();
+            });
+        });
+
+        document.querySelectorAll('#subjects-section .option').forEach(option => {
+            option.addEventListener('click', () => {
+                const subject = option.getAttribute('data-subject');
+                if (selectedSubjects.includes(subject)) {
+                    selectedSubjects = selectedSubjects.filter(s => s !== subject);
+                    option.classList.remove('selected');
+                } else {
+                    selectedSubjects.push(subject);
+                    option.classList.add('selected');
+                }
+                updatePrice();
+            });
+        });
+
+        function updatePrice() {
+            const totalPrice = selectedSubjects.length * subjectsPrices;
+            document.getElementById('total-price').innerText = totalPrice;
+            
+            if (selectedSubjects.length > 0) {
+                document.getElementById('comment-section').style.display = 'block';
+                document.getElementById('confirm-section').style.display = 'block';
+                document.getElementById('confirm-button').disabled = false;
+            } else {
+                document.getElementById('confirm-button').disabled = true;
+            }
+        }
+
+        function confirmOrder() {
+            const comment = document.getElementById('comment').value;
+            const orderData = {
+                class: selectedClass,
+                subjects: selectedSubjects,
+                comment: comment,
+                totalPrice: selectedSubjects.length * subjectsPrices
+            };
+            Telegram.WebApp.sendData(JSON.stringify(orderData));
+        }
+    </script>
+</body>
+</html>
